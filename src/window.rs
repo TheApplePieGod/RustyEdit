@@ -1,5 +1,6 @@
 use std::{sync::mpsc::Receiver};
 use glfw::{Action, Context, Key};
+use glow::HasContext;
 
 use crate::imgui_instance::ImGuiInstance;
 
@@ -7,7 +8,8 @@ pub struct Window {
     glfw_instance: glfw::Glfw,
     window: glfw::Window,
     event_receiver: Receiver<(f64, glfw::WindowEvent)>,
-    imgui_instance: ImGuiInstance
+    imgui_instance: ImGuiInstance,
+    gl_context: glow::Context
 }
 
 impl Window {
@@ -15,7 +17,7 @@ impl Window {
         let glfw_instance = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
         let (mut window, event_receiver) = glfw_instance.create_window(
-            800, 600, "Rusty Edit", 
+            1024, 760, "Rusty Edit", 
             glfw::WindowMode::Windowed
         ).expect("Failed to create GLFW window.");
 
@@ -25,6 +27,7 @@ impl Window {
         Self {
             glfw_instance,
             imgui_instance: ImGuiInstance::new(&mut window, context),
+            gl_context: unsafe { glow::Context::from_loader_function(|s| window.get_proc_address(s) as *const _) },
             window,
             event_receiver
         }
@@ -48,7 +51,9 @@ impl Window {
     }
 
     pub fn begin_frame(&self) {
-
+        unsafe {
+            self.gl_context.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
+        }
     }
 
     pub fn end_frame(&mut self) {

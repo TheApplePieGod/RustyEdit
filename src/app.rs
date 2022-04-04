@@ -8,7 +8,7 @@ pub struct AppBuilder {
 impl AppBuilder {
     pub fn new() -> Self {
         let mut context = imgui::Context::create();
-        context.set_ini_filename(None);
+        //context.set_ini_filename(None);
 
         Self {
             window: None,
@@ -41,6 +41,7 @@ impl App {
     pub fn run(&mut self) {
         while self.running && !self.window.get_handle().should_close() {
             self.window.poll_events(&mut self.imgui_context);
+            self.window.begin_frame();
 
             self.window.render_ui(&mut self.imgui_context, |ui| {
                 ui.show_demo_window(&mut true);

@@ -6,7 +6,7 @@ mod imgui_impl_glfw;
 extern crate glfw;
 extern crate imgui;
 extern crate imgui_opengl_renderer;
-extern crate glium;
+extern crate glow;
 
 use crate::app::{ AppBuilder };
 
