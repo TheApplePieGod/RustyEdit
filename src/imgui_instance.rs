@@ -15,9 +15,11 @@ impl ImGuiInstance {
         self.glfw.handle_event(context, event);
     }
 
-    pub fn render_ui<F: Fn(&imgui::Ui)>(&mut self, window: &mut glfw::Window, context: &mut imgui::Context, render: F) {
-        let ui = self.glfw.frame(window, context);
-        render(&ui);
+    pub fn begin_frame<'a>(&mut self, window: &mut glfw::Window, context: &'a mut imgui::Context) -> imgui::Ui<'a> {
+        self.glfw.frame(window, context)
+    }
+
+    pub fn end_frame(&mut self, window: &mut glfw::Window, ui: imgui::Ui) {
         self.glfw.draw(ui, window);
     }
 }

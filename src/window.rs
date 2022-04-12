@@ -49,17 +49,15 @@ impl Window {
         }
     }
 
-    pub fn render_ui<F: Fn(&imgui::Ui)>(&mut self, context: &mut imgui::Context, render: F) {
-        self.imgui_instance.render_ui(&mut self.window, context, render);
-    }
-
-    pub fn begin_frame(&self) {
+    pub fn begin_frame<'a>(&mut self, context: &'a mut imgui::Context) -> imgui::Ui<'a> {
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
+        self.imgui_instance.begin_frame(&mut self.window, context)
     }
 
-    pub fn end_frame(&mut self) {
+    pub fn end_frame(&mut self, ui: imgui::Ui) {
+        self.imgui_instance.end_frame(&mut self.window, ui);
         self.window.swap_buffers();
     }
 

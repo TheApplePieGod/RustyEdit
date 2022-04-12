@@ -4,48 +4,113 @@ pub struct Texture {
     id: u32,
     width: u32,
     height: u32,
-    pixels: Vec<u8>
+    channels: u32,
+    pixels: Vec<u8>,
+    format: gl::types::GLenum,
+    internal_format: gl::types::GLenum
 }
 
 impl Texture {
-    pub fn new(size: [u32; 2]) -> Self {
+    pub fn new(width: u32, height: u32, channels: u32, initial_data: Option<&[u8]>) -> Result<Self, &str> {
         let mut tex_id: [u32; 1] = [ 0 ];
-        let initial_data: Vec<u8> = vec![255; (size[0] * size[1] * 4) as usize];
+        let mut data: Vec<u8> = Vec::new();
+        match initial_data {
+            Some(d) => {
+                data = d.to_vec();    
+            },
+            None => {
+                data = vec![0; (width * height * channels) as usize];
+            }
+        }
+
+        let format = Texture::get_format_from_channels(channels);
+        let internal_format = Texture::get_internal_format_from_channels(channels);
+
+        if format.is_none() || internal_format.is_none() {
+            return Err("Invalid channel count");
+        }
+
         unsafe {
             gl::GenTextures(1, tex_id.as_mut_ptr());
             gl::BindTexture(gl::TEXTURE_2D, tex_id[0]);
-            gl::TexStorage2D(gl::TEXTURE_2D, 1, gl::RGBA8, size[0] as i32, size[1] as i32);
-            gl::TexSubImage2D(gl::TEXTURE_2D, 0, 0, 0, size[0] as i32, size[1] as i32, gl::RGBA, gl::UNSIGNED_BYTE, initial_data.as_ptr() as *const c_void);
+            gl::TexStorage2D(gl::TEXTURE_2D, 1, internal_format.unwrap(), width as i32, height as i32);
+            gl::TexSubImage2D(
+                gl::TEXTURE_2D, 
+                0, 
+                0, 
+                0, 
+                width as i32, 
+                height as i32, 
+                format.unwrap(), 
+                gl::UNSIGNED_BYTE, 
+                data.as_ptr() as *const c_void
+            );
         }
-        Self {
+
+        Ok(Self {
             id: tex_id[0],
-            width: size[0],
-            height: size[1],
-            pixels: initial_data
+            width,
+            height,
+            channels,
+            pixels: data,
+            format: format.unwrap(),
+            internal_format: internal_format.unwrap()
+        })
+    }
+
+    fn get_format_from_channels(channels: u32) -> Option<gl::types::GLenum> {
+        match channels {
+            1 => Some(gl::RED),
+            2 => Some(gl::RG),
+            3 => Some(gl::RGB),
+            4 => Some(gl::RGBA),
+            _ => None
         }
     }
 
-    pub fn update_pixel(&mut self, x_offset: u32, y_offset: u32, data: u8) {
-        let update: [u8; 1] = [ data ];
+    fn get_internal_format_from_channels(channels: u32) -> Option<gl::types::GLenum> {
+        match channels {
+            1 => Some(gl::R8),
+            2 => Some(gl::RG8),
+            3 => Some(gl::RGB8),
+            4 => Some(gl::RGBA8),
+            _ => None
+        }
+    }
+
+    pub fn clear(&mut self, color: &[u8]) {
+        let size = (self.width * self.height * self.channels) as usize;
+        for i in 0..size {
+            self.pixels[i] = color[i % self.channels as usize];
+        }
+
         unsafe {
             gl::TexSubImage2D(
                 gl::TEXTURE_2D, 
                 0, 
-                x_offset as i32, 
-                y_offset as i32, 
-                1, 
-                1, 
-                gl::RGBA, 
+                0,
+                0, 
+                self.width as i32, 
+                self.height as i32,
+                self.format,
                 gl::UNSIGNED_BYTE, 
-                update.as_ptr() as *const c_void);
+                self.pixels.as_ptr() as *const c_void
+            );
         }
     }
 
+    pub fn update_pixel(&mut self, x_offset: u32, y_offset: u32, color: &[u8; 4]) {
+        self.update_pixels(x_offset, y_offset, 1, 1, color);
+    }
+
     pub fn update_pixels(&mut self, x_offset: u32, y_offset: u32, width: u32, height: u32, data: &[u8]) {
+        if x_offset + width > self.width { return; }
+        if y_offset + height > self.height { return; }
+
         let mut data_index = 0;
         for i in 0..height {
-            for j in 0..width * 4 {
-                let arr_index = ((y_offset + i) * self.width * 4 + (x_offset * 4 + j)) as usize;
+            for j in 0..width * self.channels {
+                let arr_index = ((y_offset + i) * self.width * self.channels + (x_offset * self.channels + j)) as usize;
                 self.pixels[arr_index] = data[data_index];
                 data_index += 1;
             }
@@ -72,9 +137,10 @@ impl Texture {
                 y_offset as i32, 
                 width as i32, 
                 height as i32, 
-                gl::RGBA, 
+                self.format, 
                 gl::UNSIGNED_BYTE, 
-                data.as_ptr() as *const c_void);
+                data.as_ptr() as *const c_void
+            );
         }
     }
 
@@ -84,6 +150,9 @@ impl Texture {
     pub fn get_size_f32(&self) -> [f32; 2] { [self.width as f32, self.height as f32] }
     pub fn get_width(&self) -> u32 { self.width }
     pub fn get_height(&self) -> u32 { self.height }
+    pub fn get_width_f32(&self) -> f32 { self.width as f32 }
+    pub fn get_height_f32(&self) -> f32 { self.height as f32 }
+    pub fn get_channels(&self) -> u32 { self.channels }
 }
 
 impl Drop for Texture {
