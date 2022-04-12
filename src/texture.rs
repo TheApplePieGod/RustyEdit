@@ -78,6 +78,14 @@ impl Texture {
         }
     }
 
+    fn get_color_type_from_channels(channels: u32) -> Option<image::ColorType> {
+        match channels {
+            3 => Some(image::ColorType::Rgb8),
+            4 => Some(image::ColorType::Rgba8),
+            _ => None
+        }
+    }
+
     pub fn clear(&mut self, color: &[u8]) {
         let size = (self.width * self.height * self.channels) as usize;
         for i in 0..size {
@@ -141,6 +149,20 @@ impl Texture {
                 gl::UNSIGNED_BYTE, 
                 data.as_ptr() as *const c_void
             );
+        }
+    }
+
+    pub fn export(&self, path: &str) -> Result<(), String> {
+        match Texture::get_color_type_from_channels(self.channels) {
+            Some(t) => {
+                let res = image::save_buffer(path, &self.pixels, self.width, self.height, t);
+                if let Err(e) = res {
+                    Err(e.to_string())
+                } else {
+                    Ok(())
+                }
+            },
+            None => Err(String::from("Unsupported channel count"))
         }
     }
 

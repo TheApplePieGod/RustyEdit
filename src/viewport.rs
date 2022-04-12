@@ -96,6 +96,13 @@ impl Viewport {
                         t.clear(&[0, 0, 0, 0]);
                     }
 
+                    if ui.button("Export") {
+                        match t.export("export/test.png") {
+                            Ok(_) => println!("Exported current texture"),
+                            Err(e) => println!("Failed to export current texture: {}", e)
+                        }
+                    }
+
                     self.image_just_hovered = image_hovered;
                     self.last_mouse_pos = relative_mouse_pos;
                 }
