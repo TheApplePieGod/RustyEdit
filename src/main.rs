@@ -3,6 +3,7 @@ mod window;
 mod imgui_instance;
 mod imgui_impl_glfw;
 mod viewport;
+mod texture;
 
 extern crate glfw;
 extern crate imgui;

@@ -28,6 +28,11 @@ impl App {
             self.window.poll_events(&mut self.imgui_context);
             self.window.begin_frame();
 
+            // if let Some(t) = &mut self.viewport.get_mut_tex() {
+            //     let new_data = vec![50; 5 * 5 * 4];
+            //     t.update_pixels(5, 5, 5, 5, &new_data);
+            // }
+
             self.window.render_ui(&mut self.imgui_context, |ui| {
                 // ui.show_demo_window(&mut true);
                 ImGuiWindow::new("Toolbar")

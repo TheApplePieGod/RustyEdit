@@ -1,54 +1,51 @@
-use std::{num::{NonZeroU32}, ptr::null, ffi::c_void};
 use imgui::{Window as ImGuiWindow, Image as ImGuiImage};
 
+use crate::texture::Texture;
+
 pub struct Viewport {
-    image: Option<NonZeroU32>,
-    id: String,
-    size: [u32; 2]
+    texture: Option<Texture>,
+    id: String
 }
 
 impl Viewport {
     pub fn new(id: &str, size: [u32; 2]) -> Self {
-        let mut tex_id: [u32; 1] = [ 0 ];
-        let initial_data: Vec<u8> = vec![255; (size[0] * size[1] * 4) as usize];
-        unsafe {
-            gl::GenTextures(1, tex_id.as_mut_ptr());
-            gl::BindTexture(gl::TEXTURE_2D, tex_id[0]);
-            //gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA8 as i32, size[0] as i32, size[1] as i32, 0, gl::RGBA, gl::UNSIGNED_BYTE, initial_data.as_ptr() as *const c_void);
-            gl::TexStorage2D(gl::TEXTURE_2D, 1, gl::RGBA8, size[0] as i32, size[1] as i32);
-            gl::TexSubImage2D(gl::TEXTURE_2D, 0, 0, 0, size[0] as i32, size[1] as i32, gl::RGBA, gl::UNSIGNED_BYTE, initial_data.as_ptr() as *const c_void);
-        }
         Self {
-            image: NonZeroU32::new(tex_id[0]),
-            id: String::from(id),
-            size
+            texture: Some(Texture::new(size)),
+            id: String::from(id)
         }
+    }
+
+    fn get_relative_mouse_pos(&self, ui: &imgui::Ui) -> [f32; 2] {
+        let min = ui.item_rect_min();
+        let max = ui.item_rect_max();
+        let mouse_pos = ui.io().mouse_pos;
+
+        let relative_x = mouse_pos[0] - min[0];
+        let relative_y = mouse_pos[1] - min[1];
+        [
+            relative_x.clamp(0.0, max[0] - min[0]),
+            relative_y.clamp(0.0, max[1] - min[1])
+        ]
     }
 
     pub fn render_ui(&self, ui: &imgui::Ui) {
         ImGuiWindow::new(&self.id)
             .build(ui, || {
-                match self.image {
-                    Some(i) => {
-                        let tex_id = imgui::TextureId::from(i.get() as usize);
-                        ImGuiImage::new(tex_id, [self.size[0] as f32, self.size[1] as f32])
-                            .build(ui);
-                    },
-                    _ => {}
+                if let Some(t) = &self.texture {
+                    ImGuiImage::new(t.get_imgui_id(), t.get_size_f32())
+                        .build(ui);
+                    let relative_mouse_pos = self.get_relative_mouse_pos(ui);
+                    if ui.is_item_hovered() {
+                        // Right click
+                        if ui.io().mouse_down[1] {
+                            
+                        }
+                    }
                 }
             }
         );
     }
-}
 
-impl Drop for Viewport {
-    fn drop(&mut self) {
-        match self.image {
-            Some(i) => unsafe {
-                let del: [u32; 1] = [ i.get() ];
-                gl::DeleteTextures(1, del.as_ptr());
-            }
-            _ => {}
-        }
-    }
+    pub fn get_tex(&self) -> &Option<Texture> { &self.texture }
+    pub fn get_mut_tex(&mut self) -> &mut Option<Texture> { &mut self.texture }
 }
