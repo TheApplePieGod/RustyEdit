@@ -1,6 +1,5 @@
 use std::{sync::mpsc::Receiver};
 use glfw::{Action, Context, Key};
-use glow::HasContext;
 
 use crate::imgui_instance::ImGuiInstance;
 
@@ -9,25 +8,29 @@ pub struct Window {
     window: glfw::Window,
     event_receiver: Receiver<(f64, glfw::WindowEvent)>,
     imgui_instance: ImGuiInstance,
-    gl_context: glow::Context
 }
 
 impl Window {
     pub fn new(context: &mut imgui::Context) -> Self {
-        let glfw_instance = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+        let mut glfw_instance = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+
+        glfw_instance.window_hint(glfw::WindowHint::ContextVersion(3, 2));
+        glfw_instance.window_hint(glfw::WindowHint::OpenGlForwardCompat(true));
+        glfw_instance.window_hint(glfw::WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core));
 
         let (mut window, event_receiver) = glfw_instance.create_window(
-            1024, 760, "Rusty Edit", 
+            1920, 1080, "Rusty Edit", 
             glfw::WindowMode::Windowed
         ).expect("Failed to create GLFW window.");
 
         window.make_current();
         window.set_all_polling(true);
 
+        gl::load_with(|s| window.get_proc_address(s) as *const _);
+
         Self {
             glfw_instance,
             imgui_instance: ImGuiInstance::new(&mut window, context),
-            gl_context: unsafe { glow::Context::from_loader_function(|s| window.get_proc_address(s) as *const _) },
             window,
             event_receiver
         }
@@ -52,7 +55,7 @@ impl Window {
 
     pub fn begin_frame(&self) {
         unsafe {
-            self.gl_context.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
     }
 

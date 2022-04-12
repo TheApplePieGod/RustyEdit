@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 glfw = "0.44.0"
-imgui = "0.8.0"
+imgui = "0.8.2"
 imgui-opengl-renderer = "0.11.1"
-glow = "0.11.2"
+gl = "0.14.0"
