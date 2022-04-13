@@ -24,10 +24,6 @@ impl App {
         }
     }
 
-    fn render_ui(&mut self, ui: &imgui::Ui) {
-        
-    }
-
     pub fn run(&mut self) {
         while AppState::current().borrow().running && !self.window.get_handle().should_close() {
             self.window.poll_events(&mut self.imgui_context);

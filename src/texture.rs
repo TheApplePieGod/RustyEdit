@@ -13,7 +13,7 @@ pub struct Texture {
 impl Texture {
     pub fn new(width: u32, height: u32, channels: u32, initial_data: Option<&[u8]>) -> Result<Self, &str> {
         let mut tex_id: [u32; 1] = [ 0 ];
-        let mut data: Vec<u8> = Vec::new();
+        let data: Vec<u8>;
         match initial_data {
             Some(d) => {
                 data = d.to_vec();    
@@ -166,6 +166,10 @@ impl Texture {
         }
     }
 
+    pub fn get_pixel_index(&self, x: u32, y: u32) -> usize {
+        ((x * self.channels) + (y * self.channels * self.width)) as usize
+    }
+
     pub fn get_id(&self) -> u32 { self.id }
     pub fn get_imgui_id(&self) -> imgui::TextureId { imgui::TextureId::from(self.id as usize) }
     pub fn get_size(&self) -> [u32; 2] { [self.width, self.height] }
@@ -175,6 +179,7 @@ impl Texture {
     pub fn get_width_f32(&self) -> f32 { self.width as f32 }
     pub fn get_height_f32(&self) -> f32 { self.height as f32 }
     pub fn get_channels(&self) -> u32 { self.channels }
+    pub fn get_pixels(&self) -> &Vec<u8> { &self.pixels }
 }
 
 impl Drop for Texture {

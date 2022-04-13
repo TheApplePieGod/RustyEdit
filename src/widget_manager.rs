@@ -1,4 +1,4 @@
-use imgui::{Window as ImGuiWindow, MenuItem, StyleVar, ColorEdit};
+use imgui::{Window as ImGuiWindow, MenuItem, StyleVar, ColorEdit, Drag};
 
 use crate::app_state::AppState;
 use crate::viewport::Viewport;
@@ -36,7 +36,12 @@ impl WidgetManager {
             //.position([0.0, 0.0], imgui::Condition::Always)
             //.size([1000.0, 50.0], imgui::Condition::Always)
             .build(&ui, || {
-                ui.text("Hallo");
+                ui.text("Thickness");
+                ui.same_line();
+                Drag::new("##Thickness")
+                    .range(0u32, 50)
+                    .speed(0.2)
+                    .build(ui, &mut WidgetState::current().borrow_mut().thickness);
             }
         );
 
@@ -46,10 +51,12 @@ impl WidgetManager {
         // Color picker
         ImGuiWindow::new("Color Picker")
             .build(&ui, || {
-                ColorEdit::new("##GlobalColor", &mut WidgetState::current().borrow_mut().primary_color)
+                let mut colors: [f32; 4] = WidgetState::current().borrow().primary_color.into();
+                ColorEdit::new("##GlobalColor", &mut colors)
                     .alpha(true)
                     .alpha_bar(true)
                     .build(&ui);
+                WidgetState::current().borrow_mut().primary_color = colors.into();
             }
         );
 

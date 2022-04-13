@@ -10,6 +10,7 @@ mod logging;
 mod widget_manager;
 mod widget_state;
 mod image_utils;
+mod color;
 
 extern crate glfw;
 extern crate imgui;
