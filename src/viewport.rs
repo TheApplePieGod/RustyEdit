@@ -1,7 +1,7 @@
 use imgui::{Window as ImGuiWindow, Image as ImGuiImage};
 use log::{error, info};
 
-use crate::{texture::Texture, asset_manager::AssetManager};
+use crate::{texture::Texture, asset_manager::AssetManager, widget_state::WidgetState, image_utils::ImageUtils};
 
 pub struct Viewport {
     texture: Option<Texture>,
@@ -43,7 +43,7 @@ impl Viewport {
         ((a[0] - b[0]).powi(2) + (a[1] - b[1]).powi(2)).sqrt()
     }
 
-    pub fn render_ui(&mut self, ui: &imgui::Ui, asset_manager: &AssetManager) {
+    pub fn render_ui(&mut self, ui: &imgui::Ui) {
         ImGuiWindow::new(&self.id)
             .build(ui, || {
                 if let Some(t) = &mut self.texture {
@@ -52,7 +52,7 @@ impl Viewport {
                     {
                         let min = ui.cursor_screen_pos();
                         let max = [min[0] + t.get_width_f32(), min[1] + t.get_height_f32()];
-                        match asset_manager.get_texture("Checkerboard") {
+                        match AssetManager::current().borrow().get_texture("Checkerboard") {
                             Some(c) => {
                                 ui.get_window_draw_list().add_image(c.get_imgui_id(), min, max)
                                     .uv_max([2.0, 2.0])
@@ -86,7 +86,7 @@ impl Viewport {
                             ];
                             let mut current_pos = self.last_mouse_pos;
                             for _ in 0..step_count {
-                                t.update_pixel(current_pos[0] as u32, current_pos[1] as u32, &[255, 0, 0, 255]);
+                                ImageUtils::draw_square(t, current_pos[0] as u32, current_pos[1] as u32, 3, &WidgetState::current().borrow().primary_color);
                                 current_pos[0] += slope[0];
                                 current_pos[1] += slope[1];
                             }
@@ -97,18 +97,24 @@ impl Viewport {
                         t.clear(&[0, 0, 0, 0]);
                     }
 
-                    if ui.button("Export") {
-                        match t.export("export/test.png") {
-                            Ok(_) => info!("Exported current texture"),
-                            Err(e) => error!("Failed to export current texture: {}", e)
-                        }
-                    }
-
                     self.image_just_hovered = image_hovered;
                     self.last_mouse_pos = relative_mouse_pos;
                 }
             }
         );
+    }
+
+    pub fn draw_square(&self, tex: &mut Texture, size: u32) {
+        
+    }
+
+    pub fn export(&self, path: &str) {
+        if let Some(t) = &self.texture {
+            match t.export(path) {
+                Ok(_) => info!("Exported current texture"),
+                Err(e) => error!("Failed to export current texture: {}", e)
+            }
+        }
     }
 
     pub fn get_tex(&self) -> &Option<Texture> { &self.texture }

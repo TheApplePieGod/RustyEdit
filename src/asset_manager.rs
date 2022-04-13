@@ -1,17 +1,24 @@
 use std::collections::HashMap;
 use log::{error, debug};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::texture::Texture;
+
+thread_local!(static ASSET_MANAGER: Rc<RefCell<AssetManager>> = Rc::new(RefCell::new(AssetManager::new())));
 
 pub struct AssetManager {
     textures: HashMap<String, Texture>
 }
 
 impl AssetManager {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             textures: HashMap::new()
         }
+    }
+
+    pub fn current() -> Rc<RefCell<AssetManager>> {
+        ASSET_MANAGER.with(|s| s.clone())
     }
     
     pub fn load_texture(&mut self, path: &str, id: &str) {
