@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use log::{error, debug};
 
 use crate::texture::Texture;
 
@@ -12,7 +13,7 @@ impl AssetManager {
             textures: HashMap::new()
         }
     }
-
+    
     pub fn load_texture(&mut self, path: &str, id: &str) {
         match image::open(path) {
             Ok(i) => {
@@ -23,12 +24,12 @@ impl AssetManager {
                             t  
                         );
                     },
-                    Err(s) => println!("Failed to load texture {}: {}", id, s)
+                    Err(s) => error!("Failed to load texture {}: {}", id, s)
                 }
                 
-                println!("Loaded texture {}", id);
+                debug!("Loaded texture {}", id);
             },
-            Err(e) => println!("Failed to load texture {}: {}", id, e)
+            Err(e) => error!("Failed to load texture {}: {}", id, e)
         }
     }
 

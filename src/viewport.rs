@@ -1,4 +1,5 @@
 use imgui::{Window as ImGuiWindow, Image as ImGuiImage};
+use log::{error, info};
 
 use crate::{texture::Texture, asset_manager::AssetManager};
 
@@ -14,7 +15,7 @@ impl Viewport {
         let tex_result = Texture::new(width, height, 4, None);
 
         if let Err(e) = tex_result {
-            println!("Failed to create viewport texture: {}", e);            
+            error!("Failed to create viewport texture: {}", e);            
         }
 
         Self {
@@ -98,8 +99,8 @@ impl Viewport {
 
                     if ui.button("Export") {
                         match t.export("export/test.png") {
-                            Ok(_) => println!("Exported current texture"),
-                            Err(e) => println!("Failed to export current texture: {}", e)
+                            Ok(_) => info!("Exported current texture"),
+                            Err(e) => error!("Failed to export current texture: {}", e)
                         }
                     }
 
