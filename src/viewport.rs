@@ -44,6 +44,8 @@ impl Viewport {
     }
 
     pub fn render_ui(&mut self, ui: &imgui::Ui) {
+        optick::event!();
+        
         ImGuiWindow::new(&self.id)
             .build(ui, || {
                 if let Some(t) = &mut self.texture {
@@ -79,15 +81,15 @@ impl Viewport {
                     if image_hovered || self.image_just_hovered {
                         // Right click
                         if ui.io().mouse_down[1] {
-                            //let step_count = (Viewport::distance(&self.last_mouse_pos, &relative_mouse_pos) / WidgetState::current().borrow().thickness as f32).max(1.0) as u32;\
-                            let step_count = Viewport::distance(&self.last_mouse_pos, &relative_mouse_pos) as u32;
+                            let step_count = (Viewport::distance(&self.last_mouse_pos, &relative_mouse_pos) / WidgetState::current().borrow().thickness as f32).max(1.0) as u32 * 2;
+                            //let step_count = Viewport::distance(&self.last_mouse_pos, &relative_mouse_pos) as u32;
                             let slope = [
                                 (relative_mouse_pos[0] - self.last_mouse_pos[0]) / step_count as f32,
                                 (relative_mouse_pos[1] - self.last_mouse_pos[1]) / step_count as f32
                             ];
                             let mut current_pos = self.last_mouse_pos;
                             for _ in 0..step_count {
-                                ImageUtils::draw_square(
+                                ImageUtils::draw_circle(
                                     t, 
                                     current_pos[0] as u32, 
                                     current_pos[1] as u32, 

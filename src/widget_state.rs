@@ -12,7 +12,7 @@ pub struct WidgetState {
 impl WidgetState {
     fn new() -> Self {
         Self {
-            primary_color: Color::Float4 { r: 0.0, g: 0.0, b: 0.0, a: 255.0 },
+            primary_color: Color::Float4 { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
             thickness: 2
         }
     }

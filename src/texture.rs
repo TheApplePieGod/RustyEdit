@@ -112,6 +112,8 @@ impl Texture {
     }
 
     pub fn update_pixels(&mut self, x_offset: u32, y_offset: u32, width: u32, height: u32, data: &[u8]) {
+        optick::event!();
+
         if x_offset + width > self.width { return; }
         if y_offset + height > self.height { return; }
 

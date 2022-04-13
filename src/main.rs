@@ -20,12 +20,17 @@ extern crate image;
 extern crate log;
 extern crate termcolor;
 extern crate chrono;
+extern crate optick;
+extern crate rayon;
 
 use crate::{app::{ App }, logging::ConsoleLogger};
 
 static LOGGER: ConsoleLogger = ConsoleLogger;
 
 fn main() {
+    // Setup optick
+    optick::register_thread("Main Thread");
+
     // Initialize logging
     match log::set_logger(&LOGGER) {
         Ok(_) => log::set_max_level(log::LevelFilter::Trace),

@@ -37,6 +37,7 @@ impl Window {
     }
 
     pub fn poll_events(&mut self, context: &mut imgui::Context) {
+        optick::event!();
         self.glfw_instance.poll_events();
         for (_, event) in glfw::flush_messages(&self.event_receiver) {
             self.imgui_instance.handle_event(context, &event);
@@ -50,6 +51,7 @@ impl Window {
     }
 
     pub fn begin_frame<'a>(&mut self, context: &'a mut imgui::Context) -> imgui::Ui<'a> {
+        optick::event!();
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
@@ -57,6 +59,7 @@ impl Window {
     }
 
     pub fn end_frame(&mut self, ui: imgui::Ui) {
+        optick::event!();
         self.imgui_instance.end_frame(&mut self.window, ui);
         self.window.swap_buffers();
     }

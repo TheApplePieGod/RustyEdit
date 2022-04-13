@@ -26,6 +26,7 @@ impl App {
 
     pub fn run(&mut self) {
         while AppState::current().borrow().running && !self.window.get_handle().should_close() {
+            optick::next_frame();
             self.window.poll_events(&mut self.imgui_context);
             let ui = self.window.begin_frame(&mut self.imgui_context);
 
